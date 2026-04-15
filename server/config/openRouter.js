@@ -11,23 +11,25 @@ export const generateResponse = async (prompt) => {
         body: JSON.stringify({
             model: model,
             messages: [
-                { role: "system", content: "You must return ONLY valid raw JSON." }
-                ,
+                { role: "system", content: "You must return ONLY valid raw JSON." },
                 {
                     role: 'user',
                     content: prompt,
                 },
             ],
-            temperature:0.2
+            temperature: 0.2,
+
+            // ✅ ADD THIS LINE
+            max_tokens: 2000
+
         }),
     });
 
-if(!res.ok){
-    const err=await res.text()
-    throw new Error("openRouter err"+err)
-}
+    if (!res.ok) {
+        const err = await res.text()
+        throw new Error("openRouter err" + err)
+    }
 
-const data=await res.json()
-return data.choices[0].message.content
-
+    const data = await res.json()
+    return data.choices[0].message.content
 }
