@@ -10,17 +10,26 @@ export const generateResponse = async (prompt) => {
         },
         body: JSON.stringify({
             model: model,
+
             messages: [
-                { role: "system", content: "You must return ONLY valid raw JSON." },
+                {
+                    role: "system",
+                    content:
+                        "Return ONLY valid JSON. No explanation, no markdown, ensure JSON is complete and properly closed."
+                },
                 {
                     role: 'user',
                     content: prompt,
                 },
             ],
-            temperature: 0.2,
 
-            // ✅ ADD THIS LINE
-            max_tokens: 2000
+            temperature: 0.2,
+            max_tokens: 2000,
+
+            // ⭐ ADD THIS
+            response_format: {
+                type: "json_object"
+            }
 
         }),
     });
@@ -31,5 +40,6 @@ export const generateResponse = async (prompt) => {
     }
 
     const data = await res.json()
+
     return data.choices[0].message.content
 }
