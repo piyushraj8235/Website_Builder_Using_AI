@@ -1,6 +1,6 @@
 const openRouterUrl = "https://openrouter.ai/api/v1/chat/completions";
 
-// ✅ Using faster and reliable model
+// Fast and reliable model
 const model = "openai/gpt-4o-mini";
 
 export const generateResponse = async (
@@ -9,7 +9,7 @@ export const generateResponse = async (
   previousPrompt = null
 ) => {
   try {
-    // Limit memory size to prevent slow requests
+    // Prevent extremely large payloads
     let trimmedWebsite = null;
 
     if (previousWebsite) {
@@ -20,21 +20,54 @@ export const generateResponse = async (
       {
         role: "system",
         content: `
-You are an AI website builder.
+You are a professional AI website builder used by real users.
 
-Rules:
-- Always return ONLY valid JSON
-- No explanation or markdown
+Your job is to generate complete, production-ready websites.
+
+Requirements for EVERY website:
+
+- Modern professional UI/UX
+- Fully responsive design (mobile, tablet, desktop)
+- Multiple structured sections
+- Real-world layout and logic
+- Clean scalable structure
+- Editable components
+- Professional styling
+- Consistent spacing and alignment
+- Accessible and user-friendly
+- Ready for production use
+
+Always include sections such as:
+
+- Navbar
+- Hero section
+- Features / Services
+- Content section
+- Testimonials or Highlights
+- Call-to-action
+- Contact section
+- Footer
+
+Editing Rules:
+
+- If previous website JSON is provided, MODIFY the existing website
+- Keep existing structure unless user requests changes
+- Support layout changes
+- Support logic changes
+- Support feature additions
+- Never rebuild from scratch unless requested
+
+Output Rules:
+
+- Return ONLY valid JSON
+- No explanation
+- No markdown
 - JSON must be complete and parsable
-- Build full websites with multiple sections
-- Support editing existing websites
-- If previous website JSON is provided, MODIFY it instead of creating a new one
-- Handle logic changes, layout changes, and content updates
 `
       }
     ];
 
-    // Add memory if editing existing website
+    // Add memory for editing
     if (previousPrompt && trimmedWebsite) {
       messages.push({
         role: "user",
@@ -47,18 +80,18 @@ Rules:
       });
     }
 
-    // Add current user instruction
+    // Add new user request
     messages.push({
       role: "user",
       content: prompt
     });
 
-    // Timeout protection (important for production)
+    // Safety timeout
     const controller = new AbortController();
 
     const timeout = setTimeout(() => {
       controller.abort();
-    }, 60000); // 60 seconds
+    }, 60000);
 
     const res = await fetch(openRouterUrl, {
       method: "POST",
@@ -72,13 +105,10 @@ Rules:
 
         messages: messages,
 
-        // Balanced creativity and stability
         temperature: 0.3,
 
-        // Large enough for full websites
         max_tokens: 5000,
 
-        // Forces valid JSON output
         response_format: {
           type: "json_object"
         }
